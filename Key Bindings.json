@@ -1,0 +1,3 @@
+[
+	{ "keys": ["Ctrl+Return"], "command": "show_video_file_properties" }
+]
