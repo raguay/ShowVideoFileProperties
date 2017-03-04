@@ -17,7 +17,7 @@ def get_ffmpeg_loc():
                 save_json('ShowVideoFileProperties.json',jloc)
                 return('/usr/bin/ffmpeg')
             else:
-                output = subprocess.Popen(["/bin/bash","-c","'which ffmpeg'"], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[1]
+                output = subprocess.Popen(["/bin/bash","-lc","'which ffmpeg'"], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[1]
                 output = str(output)
                 if path.isfile(output):
                     loc = output
