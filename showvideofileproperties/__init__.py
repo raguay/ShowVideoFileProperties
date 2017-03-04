@@ -1,10 +1,17 @@
 from fman import DirectoryPaneCommand, load_json, save_json, show_alert
-from os import stat
+from os import stat, path
 import datetime, re, subprocess
 
 def get_ffmpeg_loc():
-    loc = load_json('ShowVideoFileProperties.json')
-    return loc['ffmpegloc']
+    loc = load_json('ShowVideoFileProperties.json')['ffmpegloc']
+    if path.isfile(loc) is not True:
+        output = subprocess.Popen(["which ffmpeg"], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+        output = str(output)
+        if path.isfile(output):
+            loc = output
+        else:
+            loc = "Can't find ffmpeg!"
+    return loc
 
 def get_video_size(vpath):
     ffmpegLoc = get_ffmpeg_loc()
