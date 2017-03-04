@@ -3,17 +3,24 @@ from os import stat
 import datetime, re, subprocess
 
 def get_ffmpeg_loc():
-    return load_json('ShowVideoFileProperties.json')['ffmpegloc']
+    loc = load_json('ShowVideoFileProperties.json')
+    return loc['ffmpegloc']
 
 def get_video_size(vpath):
     ffmpegLoc = get_ffmpeg_loc()
-    output = subprocess.Popen([ffmpegLoc, "-i", vpath], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[1].decode("utf-8")
+    output = subprocess.Popen([ffmpegLoc, "-i", vpath], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+    output = str(output)
     match = re.search("\w*Stream.*Video\:(.*)", output)
+    video_size = "not a video"
     if match:
         match = re.search(" (\d\d+x\d\d+)",match.group(1))
         if match:
-            return match.group(1)
-    return "not a video"
+            video_size = match.group(1)
+    match = re.search("\w*Duration\:([^\,]*)", output)
+    video_duration = "not a video"
+    if match:
+        video_duration = match.group(1)
+    return video_size, video_duration
 
 def convert_bytes(n):
     for x in ['B', 'KB', 'MB', 'GB', 'TB']:
@@ -41,9 +48,10 @@ class ShowVideoFileProperties(DirectoryPaneCommand):
             flastmodified = datetime.date.fromtimestamp(finfo.st_mtime)
             flastaccessed = datetime.date.fromtimestamp(finfo.st_atime)
             fsize = finfo.st_size
-            video_size = get_video_size(n)
+            video_size, video_duration = get_video_size(n)
             output += n + "\n\n"
-            output += "Video Size:\t\t\t" + video_size +"\n\n"
+            output += "Video Size:\t\t\t" + video_size +"\n"
+            output += "Video Duration:\t\t" + video_duration +"\n\n"
             output += "Last viewed:\t\t\t" + str(flastaccessed) + "\n"
             output += "Last modified:\t\t" + str(flastmodified) + "\n\n"
             output += "Size:\t\t\t" + str(convert_bytes(fsize)) + "\n"
