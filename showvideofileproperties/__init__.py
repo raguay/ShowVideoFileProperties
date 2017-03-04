@@ -3,30 +3,48 @@ from os import stat, path
 import datetime, re, subprocess
 
 def get_ffmpeg_loc():
-    loc = load_json('ShowVideoFileProperties.json')['ffmpegloc']
-    if path.isfile(loc) is not True:
-        output = subprocess.Popen(["which ffmpeg"], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
-        output = str(output)
-        if path.isfile(output):
-            loc = output
+    loc = load_json('ShowVideoFileProperties.json')
+    if loc is None:
+        if path.isfile('/usr/local/bin/ffmpeg'):
+            jloc = dict()
+            jloc['ffmpegloc'] = '/usr/local/bin/ffmpeg'
+            save_json('ShowVideoFileProperties.json',jloc)
+            return('/usr/local/bin/ffmpeg')
         else:
-            loc = "Can't find ffmpeg!"
+            if path.isfile('/usr/bin/ffmpeg'):
+                jloc = dict()
+                jloc['ffmpegloc'] = '/usr/bin/ffmpeg'
+                save_json('ShowVideoFileProperties.json',jloc)
+                return('/usr/bin/ffmpeg')
+            else:
+                output = subprocess.Popen(["/bin/bash","-c","'which ffmpeg'"], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[1]
+                output = str(output)
+                if path.isfile(output):
+                    loc = output
+                    jloc = dict()
+                    jloc['ffmpegloc'] = loc
+                    save_json('ShowVideoFileProperties.json',jloc)
+                else:
+                    loc = "Can't find ffmpeg!"
+    else:
+        loc = loc['ffmpegloc']
     return loc
 
 def get_video_size(vpath):
     ffmpegLoc = get_ffmpeg_loc()
-    output = subprocess.Popen([ffmpegLoc, "-i", vpath], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
-    output = str(output)
-    match = re.search("\w*Stream.*Video\:(.*)", output)
     video_size = "not a video"
-    if match:
-        match = re.search(" (\d\d+x\d\d+)",match.group(1))
-        if match:
-            video_size = match.group(1)
-    match = re.search("\w*Duration\:([^\,]*)", output)
     video_duration = "not a video"
-    if match:
-        video_duration = match.group(1)
+    if ffmpegLoc[0] is '/':
+        output = subprocess.Popen([ffmpegLoc, "-i", vpath], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+        output = str(output)
+        match = re.search("\w*Stream.*Video\:(.*)", output)
+        if match:
+            match = re.search(" (\d\d+x\d\d+)",match.group(1))
+            if match:
+                video_size = match.group(1)
+        match = re.search("\w*Duration\:([^\,]*)", output)
+        if match:
+            video_duration = match.group(1)
     return video_size, video_duration
 
 def convert_bytes(n):
