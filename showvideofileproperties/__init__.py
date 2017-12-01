@@ -1,6 +1,8 @@
 from fman import DirectoryPaneCommand, load_json, save_json, show_alert
 from os import stat, path
 import datetime, re, subprocess
+from fman.url import as_human_readable
+
 
 def get_ffmpeg_loc():
     loc = load_json('ShowVideoFileProperties.json')
@@ -66,17 +68,17 @@ class ShowVideoFileProperties(DirectoryPaneCommand):
 
         elif len(selected_files) == 1 or (len(selected_files) == 0 and self.get_chosen_files()):
             if len(selected_files) == 1:
-                n = selected_files[0]
+                n = as_human_readable(selected_files[0])
             elif len(selected_files) == 0 and self.get_chosen_files():
-                n = self.get_chosen_files()[0]
+                n = as_human_readable(self.get_chosen_files()[0])
             finfo = stat(n)
             flastmodified = datetime.date.fromtimestamp(finfo.st_mtime)
             flastaccessed = datetime.date.fromtimestamp(finfo.st_atime)
             fsize = finfo.st_size
             video_size, video_duration = get_video_size(n)
             output += n + "\n\n"
-            output += "Video Size:\t\t\t" + video_size +"\n"
-            output += "Video Duration:\t\t" + video_duration +"\n\n"
+            output += "Video Size:\t\t\t" + video_size + "\n"
+            output += "Video Duration:\t\t" + video_duration + "\n\n"
             output += "Last viewed:\t\t\t" + str(flastaccessed) + "\n"
             output += "Last modified:\t\t" + str(flastmodified) + "\n\n"
             output += "Size:\t\t\t" + str(convert_bytes(fsize)) + "\n"
