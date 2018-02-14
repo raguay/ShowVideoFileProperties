@@ -2,7 +2,7 @@
 
 Plugin for [fman.io](https://fman.io) to see properties of video files using ffmpeg.
 
-Install by uploading "ShowFileVideoProperties" to your [data directory](https://fman.io/docs/customizing-fman)`/Plugins`.
+Install with [fman's built-in command for installing plugins](https://fman.io/docs/installing-plugins).
 
 ### Usage
 
